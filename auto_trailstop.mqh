@@ -5,18 +5,19 @@
 class CAutoTrailstop : public CTradeOps { 
 
 private: 
+      //--- Private member variables 
+      int      ts_points_, step_, min_points_; 
+      
       void     SetTrailStop(const int ticket); 
       void     SelectTicket(const int ticket); 
       int      TradeDiffToTradePoints(const string symbol, double value);   
       double   TradePointsToTradeDiff(const string symbol, int points_distance); 
       double   TrailStopPrice(const int ticket);  
       
-      
       //--- Boolean 
       bool     IsAboveTrailStopThreshold(const int ticket); 
       bool     IsNewCandle(); 
       bool     AccountInProfit() const { return AccountInfoDouble(ACCOUNT_PROFIT); } 
-      
       
       double   SymbolBid(const string symbol) const   { return SymbolInfoDouble(symbol, SYMBOL_BID); }
       double   SymbolAsk(const string symbol) const   { return SymbolInfoDouble(symbol, SYMBOL_ASK); }
@@ -25,7 +26,20 @@ public:
       CAutoTrailstop() {}  
       ~CAutoTrailstop() {}
       void     Scan(); 
-
+      int      TrailAllPositions(); 
+      
+      //--- Wrapper 
+      int      TSPoints() const     { return ts_points_; } 
+      void     TSPoints(int value)  { ts_points_ = value; }
+      
+      int      Step() const         { return step_; }
+      void     Step(int value)      { step_ = value; }
+      
+      int      Increment(int value) { return value += Step(); }
+      int      Decrement(int value) { return value -= Step(); }
+      
+      int      MinPoints() const    { return min_points_; }
+      void     MinPoints(int value) { min_points_ = value; }
 };
 
 //--- Selects specified ticket if not yet selected 
@@ -131,3 +145,18 @@ void     CAutoTrailstop::Scan() {
    } 
 }
 
+//--- Sets all positions to trail stop 
+int      CAutoTrailstop::TrailAllPositions() {
+   if (!PosTotal()) {
+      Console_.LogInformation("No trades to modify. Order pool is empty.", __FUNCTION__); 
+      return 0; 
+   }
+   
+   Console_.LogInformation(StringFormat("%i trades found. Attempting to set trail stop.", PosTotal()), __FUNCTION__); 
+   int s, ticket, num_modified = 0; 
+   for (int i = 0; i < PosTotal(); i++) {
+      s = OP_OrderSelectByIndex(i); 
+      ticket = PosTicket(); 
+      // TODO: Get TS Price
+   }
+}
